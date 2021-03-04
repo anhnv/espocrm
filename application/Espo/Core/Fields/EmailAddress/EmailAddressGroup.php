@@ -32,9 +32,8 @@ namespace Espo\Core\Fields\EmailAddress;
 use RuntimeException;
 
 /**
- * An email address group. Contains a list of email addresses with a primary one.
- * If not empty, then there always should be a primary address.
- * Immutable.
+ * An email address group. Contains a list of email addresses. One email address is set as primary.
+ * If not empty, then there always should be a primary address. Immutable.
  */
 class EmailAddressGroup
 {
@@ -64,15 +63,21 @@ class EmailAddressGroup
         }
     }
 
+    /**
+     * Whether the group is empty.
+     */
     public function isEmpty() : bool
     {
         return count($this->list) === 0;
     }
 
-    public function getPrimary() : EmailAddress
+    /**
+     * Get a primary email address.
+     */
+    public function getPrimary() : ?EmailAddress
     {
         if ($this->isEmpty()) {
-            throw new RuntimeException("Can't get primary from empty group.");
+            return null;
         }
 
         return $this->primary;
