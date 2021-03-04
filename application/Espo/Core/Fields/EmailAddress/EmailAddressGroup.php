@@ -215,7 +215,7 @@ class EmailAddressGroup
         if ($index !== null) {
             unset($newList[$index]);
 
-            $list = array_values($list);
+            $newList = array_values($newList);
         }
 
         return self::fromList($newList);

@@ -33,11 +33,15 @@ use Espo\Core\{
     Fields\EmailAddress\EmailAddress,
 };
 
+use RuntimeException;
+
 class EmailAddressTest extends \PHPUnit\Framework\TestCase
 {
-    protected function setUp() : void
+    public function testInvalid()
     {
+        $this->expectException(RuntimeException::class);
 
+        EmailAddress::fromAddress('one');
     }
 
     public function testCloneInvalid()

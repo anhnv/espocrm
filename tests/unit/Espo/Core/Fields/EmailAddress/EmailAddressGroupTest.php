@@ -34,13 +34,10 @@ use Espo\Core\{
     Fields\EmailAddress\EmailAddressGroup,
 };
 
+use RuntimeException;
+
 class EmailAddressGroupTest extends \PHPUnit\Framework\TestCase
 {
-    protected function setUp() : void
-    {
-
-    }
-
     public function testEmpty()
     {
         $group = EmailAddressGroup::fromNothing();
@@ -49,13 +46,28 @@ class EmailAddressGroupTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(0, count($group->getSecondaryList()));
 
         $this->assertNull($group->getPrimary());
+
+        $this->assertTrue($group->isEmpty());
+    }
+
+    public function testDuplicate()
+    {
+        $this->expectException(RuntimeException::class);
+
+        EmailAddressGroup
+            ::fromList([
+                EmailAddress::fromAddress('one@test.com'),
+                EmailAddress::fromAddress('one@test.com'),
+            ]);
     }
 
     public function testWithPrimary1()
     {
         $primary = EmailAddress::fromAddress('primary@test.com')->invalid();
 
-        $group = EmailAddressGroup::fromNothing()->withPrimary($primary);
+        $group = EmailAddressGroup
+            ::fromNothing()
+            ->withPrimary($primary);
 
         $this->assertEquals(1, count($group->getList()));
         $this->assertEquals(0, count($group->getSecondaryList()));
@@ -83,17 +95,16 @@ class EmailAddressGroupTest extends \PHPUnit\Framework\TestCase
 
     public function testWithPrimary2()
     {
-
         $address = EmailAddress::fromAddress('one@test.com')->invalid();
 
-        $group = EmailAddressGroup::fromList([$address])
+        $group = EmailAddressGroup
+            ::fromList([$address])
             ->withAdded(
                 EmailAddress::fromAddress('two@test.com')
             )
             ->withPrimary(
                 EmailAddress::fromAddress('two@test.com')
             );
-
 
         $this->assertEquals('two@test.com', $group->getPrimary()->getAddress());
 
@@ -102,19 +113,105 @@ class EmailAddressGroupTest extends \PHPUnit\Framework\TestCase
 
     public function testWithAdded1()
     {
-
         $address = EmailAddress::fromAddress('one@test.com')->invalid();
 
-        $group = EmailAddressGroup::fromList([$address])
+        $group = EmailAddressGroup
+            ::fromList([$address])
             ->withAdded(
                 EmailAddress::fromAddress('two@test.com')
             );
 
+        $this->assertEquals('one@test.com', $group->getPrimary()->getAddress());
+
+        $this->assertEquals(2, count($group->getList()));
+
+        $this->assertFalse($group->isEmpty());
+    }
+
+    public function testWithAddedList()
+    {
+        $group = EmailAddressGroup
+            ::fromNothing()
+            ->withAddedList([
+                EmailAddress::fromAddress('one@test.com'),
+                EmailAddress::fromAddress('two@test.com'),
+            ]);
 
         $this->assertEquals('one@test.com', $group->getPrimary()->getAddress());
 
         $this->assertEquals(2, count($group->getList()));
     }
 
+    public function testWithRemoved1()
+    {
+        $group = EmailAddressGroup
+            ::fromList([
+                EmailAddress::fromAddress('one@test.com'),
+                EmailAddress::fromAddress('two@test.com'),
+                EmailAddress::fromAddress('three@test.com'),
+            ])
+            ->withRemoved(EmailAddress::fromAddress('two@test.com'));
 
+        $this->assertEquals('one@test.com', $group->getPrimary()->getAddress());
+
+        $this->assertEquals(2, count($group->getList()));
+    }
+
+    public function testWithRemoved2()
+    {
+        $group = EmailAddressGroup
+            ::fromList([
+                EmailAddress::fromAddress('one@test.com'),
+                EmailAddress::fromAddress('two@test.com'),
+                EmailAddress::fromAddress('three@test.com'),
+            ])
+            ->withRemoved(EmailAddress::fromAddress('one@test.com'));
+
+        $this->assertEquals('two@test.com', $group->getPrimary()->getAddress());
+
+        $this->assertEquals(2, count($group->getList()));
+    }
+
+    public function testWithRemoved3()
+    {
+        $group = EmailAddressGroup
+            ::fromList([
+                EmailAddress::fromAddress('one@test.com'),
+            ])
+            ->withRemoved(EmailAddress::fromAddress('one@test.com'));
+
+        $this->assertNull($group->getPrimary());
+
+        $this->assertEquals(0, count($group->getList()));
+
+        $this->assertTrue($group->isEmpty());
+    }
+
+    public function testHasAddress()
+    {
+        $group = EmailAddressGroup
+            ::fromList([
+                EmailAddress::fromAddress('one@test.com'),
+                EmailAddress::fromAddress('two@test.com'),
+            ]);
+
+        $this->assertTrue($group->hasAddress('one@test.com'));
+        $this->assertTrue($group->hasAddress('two@test.com'));
+
+        $this->assertFalse($group->hasAddress('four@test.com'));
+    }
+
+    public function testGetByAddress()
+    {
+        $group = EmailAddressGroup
+            ::fromList([
+                EmailAddress::fromAddress('one@test.com'),
+                EmailAddress::fromAddress('two@test.com'),
+                EmailAddress::fromAddress('three@test.com'),
+            ]);
+
+        $this->assertEquals('one@test.com', $group->getByAddress('one@test.com')->getAddress());
+
+        $this->assertNull( $group->getByAddress('four@test.com'));
+    }
 }
