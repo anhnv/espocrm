@@ -53,7 +53,9 @@ class EmailAddressGroup
      */
     private function __construct(array $list)
     {
-        $this->list = $list;
+        foreach ($list as $item) {
+            $this->list[] = clone $item;
+        }
 
         $this->validateList();
 
@@ -137,7 +139,7 @@ class EmailAddressGroup
     {
         $list = $this->list;
 
-        $index = $this->searchInList($emailAddress);
+        $index = $this->searchAddressInList($emailAddress);
 
         if ($index !== null) {
             unset($list[$index]);
@@ -146,6 +148,56 @@ class EmailAddressGroup
         }
 
         $newList = array_merge([$emailAddress], $list);
+
+        return self::fromList($newList);
+    }
+
+    /**
+     * Clone with an added email address list.
+     *
+     * @param array<EmailAddress> $list
+     */
+    public function withAddedList(array $list) : self
+    {
+        $newList = $this->list;
+
+        foreach ($list as $item) {
+            $index = $this->searchAddressInList($item->getAddress());
+
+            if ($index !== null) {
+                $newList[$index] = $item;
+
+                continue;
+            }
+
+            $newList[] = $item;
+        }
+
+        return self::fromList($newList);
+    }
+
+    /**
+     * Clone with an added email address.
+     */
+    public function withAdded(EmailAddress $emailAddress) : self
+    {
+        return $this->withAddedList([$emailAddress]);
+    }
+
+    /**
+     * Clone with removed email address.
+     */
+    public function withRemoved(EmailAddress $emailAddress) : self
+    {
+        $newList = $this->list;
+
+        $index = $this->searchAddressInList($emailAddress->getAddress());
+
+        if ($index !== null) {
+            unset($newList[$index]);
+
+            $list = array_values($list);
+        }
 
         return self::fromList($newList);
     }
@@ -160,10 +212,10 @@ class EmailAddressGroup
         return new self($list);
     }
 
-    private function searchInList(EmailAddress $emailAddress) : ?int
+    private function searchAddressInList(string $address) : ?int
     {
-        foreach ($this->list as $i => $item) {
-            if ($item === $emailAddress) {
+        foreach ($this->getAddressList() as $i => $item) {
+            if ($item === $address) {
                 return $i;
             }
         }
