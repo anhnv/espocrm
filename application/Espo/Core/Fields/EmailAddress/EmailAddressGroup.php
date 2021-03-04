@@ -126,15 +126,13 @@ class EmailAddressGroup
 
     /**
      * Get an email address by address represented as a string.
-     *
-     * @throws RuntimeException If an address if not in the list.
      */
-    public function getByAddress(string $address) : EmailAddress
+    public function getByAddress(string $address) : ?EmailAddress
     {
         $index = $this->searchAddressInList($address);
 
         if ($index === null) {
-            throw new RuntimeException("Address not in the list.");
+            return null.
         }
 
         return $this->list[$index];
