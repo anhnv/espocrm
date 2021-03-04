@@ -137,7 +137,7 @@ class EmailAddressGroup
         $index = $this->searchAddressInList($address);
 
         if ($index === null) {
-            return null.
+            return null;
         }
 
         return $this->list[$index];
@@ -229,6 +229,14 @@ class EmailAddressGroup
     public static function fromList(array $list) : self
     {
         return new self($list);
+    }
+
+    /**
+     * Create empty.
+     */
+    public static function fromNothing() : self
+    {
+        return new self([]);
     }
 
     private function searchAddressInList(string $address) : ?int
