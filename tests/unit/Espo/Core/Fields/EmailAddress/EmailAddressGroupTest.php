@@ -50,7 +50,7 @@ class EmailAddressGroupTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($group->isEmpty());
     }
 
-    public function testDuplicate()
+    public function testDuplicate1()
     {
         $this->expectException(RuntimeException::class);
 
@@ -58,6 +58,17 @@ class EmailAddressGroupTest extends \PHPUnit\Framework\TestCase
             ::fromList([
                 EmailAddress::fromAddress('one@test.com'),
                 EmailAddress::fromAddress('one@test.com'),
+            ]);
+    }
+
+    public function testDuplicate2()
+    {
+        $this->expectException(RuntimeException::class);
+
+        EmailAddressGroup
+            ::fromList([
+                EmailAddress::fromAddress('one@test.com'),
+                EmailAddress::fromAddress('ONE@test.com'),
             ]);
     }
 

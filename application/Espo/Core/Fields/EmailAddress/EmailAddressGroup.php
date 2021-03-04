@@ -255,11 +255,11 @@ class EmailAddressGroup
         $addressList = [];
 
         foreach ($this->list as $item) {
-            if (in_array($item->getAddress(), $addressList)) {
+            if (in_array(strtolower($item->getAddress()), $addressList)) {
                 throw new RuntimeException("Address list contains a duplicate.");
             }
 
-            $addressList[] = $item->getAddress();
+            $addressList[] = strtolower($item->getAddress());
         }
     }
 }
